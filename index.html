@@ -1,0 +1,1780 @@
+<!DOCTYPE html>
+<html lang="fr">
+<head>
+<meta charset="UTF-8">
+<meta name="viewport" content="width=device-width, initial-scale=1.0">
+<title>MCU — Marathon complet</title>
+<style>
+  @import url('https://fonts.googleapis.com/css2?family=Bangers&family=Anton&family=Sora:wght@400;500;600;700;800&family=JetBrains+Mono:wght@500;700&display=swap');
+
+  :root{
+    --bg:#0a0c12;
+    --panel:#12151d;
+    --panel-2:#171c27;
+    --hair:#262d3d;
+    --ink:#f2f4f8;
+    --sub:#8b93a8;
+    --red:#e6304a;
+    --gold:#ffb703;
+    --done:#34d399;
+    --sony:#8c6dff;
+  }
+
+  *{box-sizing:border-box;}
+  html,body{margin:0;padding:0;}
+  body{
+    background:var(--bg);
+    color:var(--ink);
+    font-family:'Sora', sans-serif;
+    min-height:100vh;
+    padding-bottom:80px;
+  }
+
+  header{
+    position:relative;
+    padding:34px 20px 26px;
+    text-align:center;
+    overflow:hidden;
+    background:
+      radial-gradient(120% 100% at 50% 0%, rgba(255,183,3,0.10), transparent 60%),
+      linear-gradient(180deg, #14090c, var(--bg) 75%);
+    border-bottom:1px solid var(--hair);
+  }
+  header::before, header::after{
+    content:'';
+    display:block;
+    height:10px;
+    background-image:repeating-radial-gradient(circle at 8px 5px, rgba(255,183,3,0.55) 0 2px, transparent 2px 16px);
+    background-size:16px 10px;
+    opacity:.55;
+  }
+  header .eyebrow{
+    font-family:'JetBrains Mono', monospace;
+    font-size:11px;
+    letter-spacing:3px;
+    text-transform:uppercase;
+    color:var(--gold);
+    font-weight:700;
+    margin-bottom:6px;
+  }
+  header h1{
+    font-family:'Bangers', cursive;
+    letter-spacing:2.5px;
+    font-size:clamp(38px,9vw,58px);
+    margin:0;
+    line-height:1;
+    color:var(--ink);
+    text-shadow:0 0 22px rgba(255,183,3,0.35), 0 0 4px rgba(230,48,74,0.5);
+    transform:rotate(-1deg);
+  }
+  header p{
+    font-size:13.5px;
+    color:var(--sub);
+    margin:10px 0 0;
+    font-weight:500;
+  }
+
+  .stats-wrap{
+    max-width:640px;
+    margin:24px auto 0;
+    padding:0 20px;
+  }
+
+  .progress-label{
+    display:flex;
+    justify-content:space-between;
+    font-size:12px;
+    color:var(--sub);
+    margin-bottom:7px;
+    font-weight:600;
+    text-transform:uppercase;
+    letter-spacing:.8px;
+  }
+  .progress-label span.count{
+    color:var(--gold);
+    font-family:'JetBrains Mono', monospace;
+    letter-spacing:0;
+    text-transform:none;
+  }
+  .progress-track{
+    height:16px;
+    background:
+      repeating-linear-gradient(90deg, rgba(255,255,255,0.03) 0 1px, transparent 1px 8px),
+      var(--panel);
+    border:1px solid var(--hair);
+    border-radius:4px;
+    overflow:hidden;
+    position:relative;
+  }
+  .progress-fill{
+    height:100%;
+    width:0%;
+    background:linear-gradient(90deg,var(--red),var(--gold));
+    box-shadow:0 0 14px rgba(255,183,3,0.45);
+    transition:width .5s ease;
+  }
+
+  .time-cards{
+    display:grid;
+    grid-template-columns:1fr 1fr;
+    gap:10px;
+    margin-top:16px;
+  }
+  .time-card{
+    background:var(--panel);
+    border:1px solid var(--hair);
+    border-left:3px solid var(--hair);
+    border-radius:8px;
+    padding:11px 13px;
+  }
+  .time-card.watched{border-left-color:var(--done);}
+  .time-card.remaining{border-left-color:var(--gold);}
+  .time-card .tc-label{
+    font-size:10.5px;
+    color:var(--sub);
+    text-transform:uppercase;
+    letter-spacing:1px;
+    font-weight:700;
+  }
+  .time-card .tc-value{
+    font-family:'JetBrains Mono', monospace;
+    font-weight:700;
+    font-size:21px;
+    margin-top:4px;
+    color:var(--ink);
+  }
+  .time-card.remaining .tc-value{color:var(--gold);}
+  .time-card.watched .tc-value{color:var(--done);}
+
+  .jump-note{
+    max-width:640px;
+    margin:16px auto 0;
+    padding:13px 16px;
+    background:var(--panel-2);
+    border:1px dashed var(--sony);
+    border-radius:2px;
+    clip-path:polygon(0 0, calc(100% - 16px) 0, 100% 16px, 100% 100%, 0 100%);
+    font-size:12.5px;
+    color:#c9bfff;
+    line-height:1.55;
+  }
+  .jump-note b{color:#fff;}
+
+  .tabs{
+    max-width:640px;
+    margin:24px auto 0;
+    padding:0 20px;
+    display:flex;
+    gap:8px;
+    flex-wrap:wrap;
+  }
+  .tab-btn{
+    flex:1;
+    min-width:100px;
+    background:var(--panel);
+    border:1px solid var(--hair);
+    border-bottom:2px dashed var(--hair);
+    color:var(--sub);
+    font-family:'Anton', sans-serif;
+    font-weight:400;
+    letter-spacing:.5px;
+    font-size:13px;
+    padding:11px 8px;
+    border-radius:8px;
+    cursor:pointer;
+    transition:all .15s ease;
+    display:flex;
+    align-items:center;
+    justify-content:center;
+    gap:6px;
+  }
+  .tab-icon-wrap{
+    width:18px;
+    height:18px;
+    flex-shrink:0;
+    display:inline-block;
+  }
+  .tab-icon{
+    width:18px;
+    height:18px;
+    flex-shrink:0;
+    object-fit:cover;
+    border-radius:3px;
+  }
+  .tab-btn.active{
+    color:#1a1206;
+    background:linear-gradient(180deg, var(--gold), #e6a300);
+    border-color:var(--gold);
+  }
+  .tab-panel{display:none;}
+  .tab-panel.active{display:block;}
+
+  main{
+    max-width:640px;
+    margin:36px auto;
+    padding:0 20px;
+    position:relative;
+  }
+  .hero-scatter{
+    position:absolute;
+    inset:0;
+    overflow:hidden;
+    pointer-events:none;
+    z-index:0;
+  }
+  .scatter-icon{
+    position:absolute;
+    opacity:.22;
+  }
+  #main-cinema-content, #main-all-content, #main-games-content{
+    position:relative;
+    z-index:1;
+  }
+
+  .phase{
+    margin-bottom:30px;
+  }
+  .phase-head{
+    display:flex;
+    align-items:center;
+    gap:10px;
+    margin-bottom:12px;
+    padding-left:2px;
+    flex-wrap:wrap;
+  }
+  .phase-num{
+    font-family:'JetBrains Mono', monospace;
+    font-size:12px;
+    font-weight:700;
+    color:#1a1206;
+    background:
+      radial-gradient(circle at 50% 50%, transparent 3px, var(--gold) 3.5px);
+    width:26px;
+    height:26px;
+    line-height:26px;
+    text-align:center;
+    border-radius:50%;
+    flex-shrink:0;
+  }
+  .phase.sony .phase-num{
+    color:#fff;
+    background:radial-gradient(circle at 50% 50%, transparent 3px, var(--sony) 3.5px);
+  }
+  .phase-title{
+    font-family:'Anton', sans-serif;
+    font-weight:400;
+    font-size:16px;
+    letter-spacing:1px;
+    color:var(--ink);
+    text-transform:uppercase;
+    display:flex;
+    align-items:center;
+    gap:6px;
+  }
+  .phase-icon{
+    width:17px;
+    height:17px;
+    color:var(--gold);
+    flex-shrink:0;
+    object-fit:cover;
+    border-radius:4px;
+  }
+  .phase.sony .phase-icon{color:var(--sony);}
+  .phase-head::after{
+    content:'';
+    flex:1;
+    height:0;
+    border-top:2px dotted var(--hair);
+    min-width:16px;
+  }
+  .phase-sub{
+    font-size:11.5px;
+    color:var(--sub);
+    width:100%;
+    margin-top:2px;
+    font-weight:500;
+    text-transform:none;
+    letter-spacing:0;
+    order:5;
+  }
+  .phase-duration{
+    font-family:'JetBrains Mono', monospace;
+    font-size:12px;
+    color:var(--sub);
+    font-weight:600;
+    order:4;
+  }
+
+  ul.items{
+    list-style:none;
+    margin:0;
+    padding:0;
+    border:1px solid var(--hair);
+    border-radius:10px;
+    overflow:hidden;
+    background:var(--panel);
+    box-shadow:inset 0 1px 0 rgba(255,255,255,0.04);
+  }
+  ul.items::before{
+    content:'';
+    display:block;
+    height:7px;
+    background-image:repeating-radial-gradient(circle at 7px 3.5px, rgba(255,255,255,0.14) 0 2px, transparent 2px 14px);
+    background-size:14px 7px;
+  }
+  .phase.sony ul.items{border-color:var(--sony);}
+  li.item{
+    border-bottom:1px solid var(--hair);
+    background-image:repeating-linear-gradient(to bottom, var(--hair) 0 5px, transparent 5px 10px);
+    background-position:right 78px top 0;
+    background-size:1px 10px;
+    background-repeat:repeat-y;
+  }
+  li.item:last-child{border-bottom:none;}
+
+  label.row{
+    display:flex;
+    align-items:flex-start;
+    gap:13px;
+    padding:14px 15px;
+    cursor:pointer;
+    transition:background .15s ease;
+  }
+  label.row:hover{background:rgba(255,255,255,0.025);}
+
+  input[type=checkbox]{
+    appearance:none;
+    -webkit-appearance:none;
+    width:23px;
+    height:23px;
+    min-width:23px;
+    border-radius:50%;
+    border:2px solid var(--sub);
+    margin-top:2px;
+    position:relative;
+    cursor:pointer;
+    background:transparent;
+    transition:border-color .15s ease, background .15s ease;
+  }
+  input[type=checkbox]:checked{
+    background:var(--red);
+    border-color:var(--red);
+    box-shadow:0 0 0 3px rgba(230,48,74,0.2);
+  }
+  input[type=checkbox]:checked::after{
+    content:"";
+    position:absolute;
+    left:6px;
+    top:2px;
+    width:6px;
+    height:11px;
+    border:solid #fff;
+    border-width:0 3px 3px 0;
+    transform:rotate(40deg);
+  }
+
+  .item-text{flex:1; min-width:0;}
+  .item-title-row{
+    display:flex;
+    align-items:baseline;
+    justify-content:space-between;
+    gap:8px;
+  }
+  .item-title{
+    font-weight:600;
+    font-size:14.5px;
+    line-height:1.35;
+    font-family:'Sora', sans-serif;
+  }
+  .item-duration{
+    font-family:'JetBrains Mono', monospace;
+    font-size:12px;
+    color:var(--sub);
+    font-weight:500;
+    white-space:nowrap;
+    flex-shrink:0;
+  }
+  .item-year{
+    font-size:12px;
+    color:var(--sub);
+    margin-top:2px;
+  }
+  .tag{
+    display:inline-block;
+    font-size:9.5px;
+    font-weight:700;
+    letter-spacing:.5px;
+    padding:2px 7px;
+    border-radius:3px;
+    margin-left:8px;
+    vertical-align:middle;
+    text-transform:uppercase;
+  }
+  .tag.serie{background:rgba(140,109,255,0.16); color:#b3a1ff;}
+  .tag.special{background:rgba(255,183,3,0.16); color:var(--gold);}
+  .tag.netflix{background:rgba(230,48,74,0.16); color:#ff8798;}
+  .tag.anim{background:rgba(52,211,153,0.16); color:var(--done);}
+  .tag.sony{background:rgba(140,109,255,0.2); color:#c9bfff;}
+  .tag.upcoming{background:rgba(52,211,153,0.18); color:var(--done); border:1px solid rgba(52,211,153,0.5);}
+  .tag.jeu{background:rgba(255,183,3,0.16); color:var(--gold);}
+
+  li.item.item-upcoming{
+    box-shadow:inset 3px 0 0 var(--done);
+    background:rgba(52,211,153,0.05);
+  }
+
+  input[type=checkbox]:checked ~ .item-text .item-title,
+  li.item.checked .item-title{
+    text-decoration:line-through;
+    color:var(--sub);
+  }
+  li.item.checked .item-duration{
+    color:#3a4054;
+  }
+
+  .reset-bar{
+    max-width:640px;
+    margin:0 auto 16px;
+    padding:0 20px;
+    text-align:center;
+    display:flex;
+    gap:10px;
+    justify-content:center;
+    flex-wrap:wrap;
+  }
+  button#reset, button#customize-toggle{
+    background:transparent;
+    border:1px solid var(--hair);
+    color:var(--sub);
+    font-family:'Sora', sans-serif;
+    font-size:12.5px;
+    font-weight:600;
+    padding:10px 18px;
+    border-radius:8px;
+    cursor:pointer;
+    transition:border-color .15s ease, color .15s ease;
+  }
+  button#reset:hover{
+    border-color:var(--red);
+    color:var(--red);
+  }
+  button#customize-toggle:hover{
+    border-color:var(--gold);
+    color:var(--gold);
+  }
+
+  .customize-panel{
+    display:none;
+    position:fixed;
+    inset:0;
+    z-index:100;
+    background:rgba(6,7,10,0.88);
+    overflow-y:auto;
+    padding:24px 20px 40px;
+  }
+  .customize-panel.open{display:block;}
+  .customize-head{
+    max-width:520px;
+    margin:0 auto 6px;
+    display:flex;
+    justify-content:space-between;
+    align-items:center;
+    font-family:'Anton', sans-serif;
+    font-size:18px;
+    letter-spacing:.5px;
+    color:var(--ink);
+  }
+  .customize-head button{
+    background:var(--panel);
+    border:1px solid var(--hair);
+    color:var(--sub);
+    width:32px;
+    height:32px;
+    border-radius:8px;
+    font-size:15px;
+    cursor:pointer;
+  }
+  .customize-hint{
+    max-width:520px;
+    margin:0 auto 20px;
+    font-size:12.5px;
+    color:var(--sub);
+    line-height:1.5;
+  }
+  .customize-rows{
+    max-width:520px;
+    margin:0 auto;
+    display:flex;
+    flex-direction:column;
+    gap:12px;
+  }
+  .customize-row{
+    background:var(--panel);
+    border:1px solid var(--hair);
+    border-radius:10px;
+    padding:12px 14px;
+    display:flex;
+    align-items:center;
+    gap:12px;
+  }
+  .customize-thumb{
+    width:44px;
+    height:44px;
+    border-radius:8px;
+    background:var(--panel-2);
+    border:1px solid var(--hair);
+    object-fit:cover;
+    flex-shrink:0;
+  }
+  .customize-info{flex:1; min-width:0;}
+  .customize-info .name{
+    font-family:'Sora', sans-serif;
+    font-weight:700;
+    font-size:14px;
+    color:var(--ink);
+  }
+  .customize-info .status{
+    font-size:11.5px;
+    color:var(--sub);
+    margin-top:1px;
+  }
+  .customize-actions{
+    display:flex;
+    flex-direction:column;
+    gap:6px;
+    flex-shrink:0;
+  }
+  .customize-actions label{
+    background:var(--gold);
+    color:#1a1206;
+    font-family:'Sora', sans-serif;
+    font-weight:700;
+    font-size:11.5px;
+    padding:7px 12px;
+    border-radius:6px;
+    cursor:pointer;
+    text-align:center;
+    white-space:nowrap;
+  }
+  .customize-actions input[type=file]{display:none;}
+  .customize-actions button{
+    background:transparent;
+    border:1px solid var(--hair);
+    color:var(--sub);
+    font-size:11px;
+    padding:6px 10px;
+    border-radius:6px;
+    cursor:pointer;
+  }
+
+  .streaming-box{
+    max-width:520px;
+    margin:0 auto 24px;
+    background:var(--panel);
+    border:1px solid var(--gold);
+    border-radius:10px;
+    padding:16px;
+  }
+  .streaming-label{
+    font-family:'Anton', sans-serif;
+    font-size:15px;
+    color:var(--gold);
+    margin-bottom:6px;
+  }
+  .streaming-box .customize-hint{margin:0 0 10px; max-width:none;}
+  #streaming-link-input{
+    width:100%;
+    background:var(--panel-2);
+    border:1px solid var(--hair);
+    color:var(--ink);
+    font-family:'Sora', sans-serif;
+    font-size:13.5px;
+    padding:10px 12px;
+    border-radius:8px;
+    outline:none;
+    margin-bottom:10px;
+  }
+  #streaming-link-input:focus{border-color:var(--gold);}
+  #streaming-link-save{
+    background:var(--gold);
+    color:#1a1206;
+    border:none;
+    font-family:'Sora', sans-serif;
+    font-weight:700;
+    font-size:13px;
+    padding:9px 16px;
+    border-radius:8px;
+    cursor:pointer;
+  }
+  .streaming-status{
+    font-size:11.5px;
+    color:var(--done);
+    margin:8px 0 0;
+    min-height:14px;
+  }
+
+  #tv-shortcut{
+    position:fixed;
+    right:18px;
+    bottom:18px;
+    width:52px;
+    height:52px;
+    border-radius:50%;
+    background:linear-gradient(155deg, var(--gold), #e6a300);
+    border:none;
+    box-shadow:0 6px 18px rgba(255,183,3,0.4);
+    cursor:pointer;
+    z-index:90;
+    display:flex;
+    align-items:center;
+    justify-content:center;
+  }
+  #tv-shortcut svg{
+    width:24px;
+    height:24px;
+    color:#1a1206;
+  }
+
+  .save-note{
+    text-align:center;
+    font-size:11.5px;
+    color:var(--sub);
+    max-width:640px;
+    margin:0 auto 20px;
+    padding:0 24px;
+  }
+  .save-note.footnote{margin-top:-12px;}
+
+  .swinger-wrap{
+    position:absolute;
+    top:0;
+    right:8%;
+    width:70px;
+    height:110px;
+    pointer-events:none;
+    z-index:1;
+  }
+  .swinger-rope{
+    position:absolute;
+    top:0;
+    left:50%;
+    width:1px;
+    height:46px;
+    background:linear-gradient(var(--hair), transparent);
+  }
+  .swing-pivot{
+    position:absolute;
+    top:44px;
+    left:50%;
+    transform-origin:top center;
+    animation:swing 3.6s ease-in-out infinite;
+  }
+  .swinger-fig{
+    width:34px;
+    height:52px;
+    color:var(--red);
+    opacity:.9;
+    transform:translateX(-50%);
+    filter:drop-shadow(0 4px 10px rgba(230,48,74,0.25));
+    object-fit:contain;
+    display:block;
+  }
+  @keyframes swing{
+    0%,100%{transform:rotate(-16deg);}
+    50%{transform:rotate(16deg);}
+  }
+  @media (prefers-reduced-motion: reduce){
+    .swing-pivot{animation:none; transform:rotate(-6deg);}
+  }
+  @media (max-width:480px){
+    .swinger-wrap{right:4%; width:56px;}
+  }
+
+  .search-wrap{
+    max-width:640px;
+    margin:18px auto 0;
+    padding:0 20px;
+    position:relative;
+  }
+  .search-icon{
+    position:absolute;
+    left:32px;
+    top:50%;
+    transform:translateY(-50%);
+    width:16px;
+    height:16px;
+    color:var(--sub);
+    pointer-events:none;
+  }
+  #search-input{
+    width:100%;
+    background:var(--panel);
+    border:1px solid var(--hair);
+    color:var(--ink);
+    font-family:'Sora', sans-serif;
+    font-size:14px;
+    padding:11px 14px 11px 40px;
+    border-radius:8px;
+    outline:none;
+    transition:border-color .15s ease;
+  }
+  #search-input:focus{border-color:var(--gold);}
+  #search-input::placeholder{color:var(--sub);}
+
+  .item-poster{
+    width:40px;
+    height:56px;
+    border-radius:5px;
+    object-fit:cover;
+    flex-shrink:0;
+    border:1px solid var(--hair);
+    display:block;
+  }
+  .item-poster-fallback{
+    width:40px;
+    height:56px;
+    border-radius:5px;
+    flex-shrink:0;
+    border:1px solid var(--hair);
+    display:none;
+    align-items:center;
+    justify-content:center;
+    font-family:'Anton', sans-serif;
+    font-size:15px;
+    color:rgba(255,255,255,0.75);
+    background:linear-gradient(155deg, var(--sony), var(--red) 60%, var(--gold));
+    text-shadow:0 1px 3px rgba(0,0,0,0.4);
+  }
+
+  li.item.hidden, .phase.hidden{display:none;}
+
+  .flying-hero{
+    position:fixed;
+    top:16%;
+    left:0;
+    width:54px;
+    height:54px;
+    color:var(--red);
+    z-index:50;
+    pointer-events:none;
+    animation:fly-across 10s linear infinite;
+    filter:drop-shadow(0 6px 14px rgba(230,48,74,0.45));
+  }
+  @keyframes fly-across{
+    0%{ transform:translate(-15vw,8vh) rotate(-10deg); opacity:0;}
+    8%{opacity:1;}
+    50%{ transform:translate(55vw,-6vh) rotate(6deg);}
+    92%{opacity:1;}
+    100%{ transform:translate(125vw,-22vh) rotate(12deg); opacity:0;}
+  }
+
+  .flying-shield{
+    position:fixed;
+    top:62%;
+    left:0;
+    width:44px;
+    height:44px;
+    color:var(--gold);
+    z-index:50;
+    pointer-events:none;
+    animation:shield-throw 8s ease-in-out infinite;
+    animation-delay:3.5s;
+    filter:drop-shadow(0 6px 14px rgba(255,183,3,0.4));
+  }
+  @keyframes shield-throw{
+    0%{transform:translate(-10vw,0) rotate(0deg); opacity:0;}
+    6%{opacity:1;}
+    45%{transform:translate(90vw,-8vh) rotate(560deg);}
+    50%{transform:translate(96vw,-6vh) rotate(600deg);}
+    94%{opacity:1;}
+    100%{transform:translate(-10vw,4vh) rotate(1080deg); opacity:0;}
+  }
+
+  .flying-hammer{
+    position:fixed;
+    top:38%;
+    left:0;
+    width:42px;
+    height:42px;
+    color:var(--sony);
+    z-index:50;
+    pointer-events:none;
+    animation:hammer-spin 9s ease-in-out infinite;
+    animation-delay:1.8s;
+    filter:drop-shadow(0 6px 14px rgba(140,109,255,0.4));
+  }
+  @keyframes hammer-spin{
+    0%{transform:translate(110vw,4vh) rotate(0deg); opacity:0;}
+    6%{opacity:1;}
+    45%{transform:translate(20vw,-10vh) rotate(-560deg);}
+    50%{transform:translate(12vw,-8vh) rotate(-600deg);}
+    94%{opacity:1;}
+    100%{transform:translate(110vw,6vh) rotate(-1080deg); opacity:0;}
+  }
+
+  .leaping-hulk{
+    position:fixed;
+    top:80%;
+    left:0;
+    width:54px;
+    height:54px;
+    color:var(--done);
+    z-index:50;
+    pointer-events:none;
+    animation:hulk-leap 9s linear infinite;
+    animation-delay:5s;
+    filter:drop-shadow(0 6px 14px rgba(52,211,153,0.4));
+  }
+  @keyframes hulk-leap{
+    0%{transform:translate(-15vw,0) scale(1); opacity:0;}
+    6%{opacity:1;}
+    20%{transform:translate(10vw,-11vh) scale(1.08);}
+    35%{transform:translate(32vw,3vh) scale(0.94);}
+    50%{transform:translate(54vw,-13vh) scale(1.08);}
+    65%{transform:translate(76vw,3vh) scale(0.94);}
+    80%{transform:translate(96vw,-9vh) scale(1.04);}
+    94%{opacity:1;}
+    100%{transform:translate(118vw,0) scale(1); opacity:0;}
+  }
+
+  .mystic-portal{
+    position:fixed;
+    top:26%;
+    left:0;
+    width:48px;
+    height:48px;
+    z-index:50;
+    pointer-events:none;
+    animation:mystic-drift 10s ease-in-out infinite;
+    animation-delay:7s;
+    filter:drop-shadow(0 0 12px rgba(224,98,59,0.5));
+  }
+  @keyframes mystic-drift{
+    0%{transform:translate(-12vw,0) rotate(0deg) scale(0.7); opacity:0;}
+    8%{opacity:1; transform:translate(0vw,-2vh) rotate(30deg) scale(1);}
+    30%{transform:translate(30vw,4vh) rotate(120deg) scale(1.1);}
+    50%{transform:translate(55vw,-6vh) rotate(240deg) scale(0.9);}
+    70%{transform:translate(80vw,3vh) rotate(320deg) scale(1.05);}
+    92%{opacity:1;}
+    100%{transform:translate(115vw,-4vh) rotate(420deg) scale(0.7); opacity:0;}
+  }
+
+  .prowling-panther{
+    position:fixed;
+    bottom:6%;
+    left:0;
+    width:58px;
+    height:38px;
+    z-index:50;
+    pointer-events:none;
+    animation:panther-prowl 11s linear infinite;
+    animation-delay:9s;
+    filter:drop-shadow(0 4px 10px rgba(0,0,0,0.5));
+  }
+  @keyframes panther-prowl{
+    0%{transform:translate(-20vw,0) scaleX(1); opacity:0;}
+    6%{opacity:1;}
+    24%{transform:translate(15vw,-1.5vh) scaleX(1);}
+    26%{transform:translate(18vw,0) scaleX(1);}
+    48%{transform:translate(48vw,-1.5vh) scaleX(1);}
+    50%{transform:translate(50vw,0) scaleX(1);}
+    72%{transform:translate(78vw,-1.5vh) scaleX(1);}
+    94%{opacity:1;}
+    100%{transform:translate(120vw,0) scaleX(1); opacity:0;}
+  }
+
+  .flying-hero img, .flying-shield img, .flying-hammer img, .leaping-hulk img, .mystic-portal img, .prowling-panther img,
+  .flying-hero svg, .flying-shield svg, .flying-hammer svg, .leaping-hulk svg, .mystic-portal svg, .prowling-panther svg{
+    width:100%;
+    height:100%;
+    object-fit:contain;
+    display:block;
+  }
+
+  @media (prefers-reduced-motion: reduce){
+    .flying-hero, .flying-shield, .flying-hammer, .leaping-hulk, .mystic-portal, .prowling-panther{display:none;}
+  }
+
+  #loading{
+    text-align:center;
+    padding:60px 20px;
+    color:var(--sub);
+    font-size:14px;
+    font-family:'JetBrains Mono', monospace;
+  }
+</style>
+</head>
+<body>
+
+<svg style="position:absolute;width:0;height:0;overflow:hidden" aria-hidden="true">
+  <defs>
+    <symbol id="icon-ring" viewBox="0 0 24 24"><circle cx="12" cy="12" r="9" fill="none" stroke="currentColor" stroke-width="1.6"/><circle cx="12" cy="12" r="4.2" fill="none" stroke="currentColor" stroke-width="1.6"/><circle cx="12" cy="12" r="1.4" fill="currentColor"/></symbol>
+    <symbol id="icon-star" viewBox="0 0 24 24"><path d="M12 2.5l2.7 6.3 6.8.6-5.2 4.5 1.6 6.7L12 17l-5.9 3.6 1.6-6.7-5.2-4.5 6.8-.6z" fill="currentColor"/></symbol>
+    <symbol id="icon-bolt" viewBox="0 0 24 24"><path d="M13 2 4 14h6l-1 8 9-12h-6z" fill="currentColor"/></symbol>
+    <symbol id="icon-burst" viewBox="0 0 24 24"><path d="M12 1l1.8 5.6L19 3.8l-2 5.6 6 1-5 3.6 5 3.6-6 1 2 5.6-5.2-2.8L12 24l-1.8-5.6L5 21.2l2-5.6-6-1 5-3.6-5-3.6 6-1-2-5.6 5.2 2.8z" fill="currentColor"/></symbol>
+    <symbol id="icon-orbit" viewBox="0 0 24 24"><ellipse cx="12" cy="12" rx="10" ry="4.2" fill="none" stroke="currentColor" stroke-width="1.5" transform="rotate(-20 12 12)"/><circle cx="12" cy="12" r="2.6" fill="currentColor"/></symbol>
+    <symbol id="icon-web" viewBox="0 0 24 24"><circle cx="12" cy="12" r="9.5" fill="none" stroke="currentColor" stroke-width="1.1"/><circle cx="12" cy="12" r="6" fill="none" stroke="currentColor" stroke-width="1"/><circle cx="12" cy="12" r="2.6" fill="none" stroke="currentColor" stroke-width="1"/><path d="M12 2.5v19M2.5 12h19M5 5l14 14M19 5L5 19" stroke="currentColor" stroke-width="1"/></symbol>
+    <symbol id="icon-ticket" viewBox="0 0 24 24"><path d="M3 8a2 2 0 100 4 M21 8a2 2 0 110 4" stroke="currentColor" stroke-width="1.5" fill="none"/><path d="M3 8v-.5A1.5 1.5 0 014.5 6h15A1.5 1.5 0 0121 7.5V8a2 2 0 000 4v.5a1.5 1.5 0 01-1.5 1.5h-15A1.5 1.5 0 013 12.5V12a2 2 0 000-4z" fill="none" stroke="currentColor" stroke-width="1.5"/><path d="M14 6.5v11" stroke="currentColor" stroke-width="1.4" stroke-dasharray="2.2 2.2"/></symbol>
+    <symbol id="icon-search" viewBox="0 0 24 24"><circle cx="10.5" cy="10.5" r="6.5" fill="none" stroke="currentColor" stroke-width="1.8"/><path d="M20 20l-4.8-4.8" stroke="currentColor" stroke-width="1.8" stroke-linecap="round"/></symbol>
+    <symbol id="icon-tv" viewBox="0 0 24 24"><rect x="2.5" y="6" width="19" height="13" rx="2" fill="none" stroke="currentColor" stroke-width="1.7"/><path d="M8 2.5L12 6l4-3.5" stroke="currentColor" stroke-width="1.7" stroke-linecap="round" fill="none"/><path d="M6.5 10.5h5v5h-5z" fill="currentColor" opacity=".85"/></symbol>
+    <symbol id="icon-controller" viewBox="0 0 24 24"><path d="M6 8h12a4 4 0 014 4.5l-.7 4a2.3 2.3 0 01-4-.8L16 13H8l-1.3 2.7a2.3 2.3 0 01-4 .8l-.7-4A4 4 0 016 8z" fill="none" stroke="currentColor" stroke-width="1.6"/><path d="M7.5 10.5v3M6 12h3" stroke="currentColor" stroke-width="1.4" stroke-linecap="round"/><circle cx="15.5" cy="10.5" r=".9" fill="currentColor"/><circle cx="17.5" cy="12.5" r=".9" fill="currentColor"/></symbol>
+    <symbol id="icon-drstrange" viewBox="0 0 24 24"><circle cx="12" cy="12" r="9.3" fill="none" stroke="#c8ab5a" stroke-width="1.4" stroke-dasharray="1.2 2.4"/><circle cx="12" cy="12" r="6.4" fill="none" stroke="#e0623b" stroke-width="1.8"/><path d="M12 6.5c-1 2-1 3.7 0 5.5 1-1.8 1-3.5 0-5.5z" fill="#c8ab5a"/></symbol>
+    <symbol id="icon-blackpanther" viewBox="0 0 24 24"><path d="M12 3c-3 0-4.2 2-4.2 3.6 0 1 .5 1.6 1.2 2-1.7.3-3.5 1.6-3.5 4 0 3 2.6 4.7 2.6 4.7l-1 3.7h3.4l.8-2.6c.3 0 .5 0 .8 0l.8 2.6h3.4l-1-3.7s2.6-1.7 2.6-4.7c0-2.4-1.8-3.7-3.5-4 .7-.4 1.2-1 1.2-2C16.2 5 15 3 12 3z" fill="#101216" stroke="#2c313c" stroke-width="0.6"/><circle cx="9.6" cy="9.2" r="0.9" fill="#c8102e"/><circle cx="14.4" cy="9.2" r="0.9" fill="#c8102e"/></symbol>
+    <symbol id="icon-swinger" viewBox="0 0 34 52"><circle cx="17" cy="7" r="5.2" fill="currentColor"/><path d="M17 12c-3 2-5 5-4 10l-7 9c-1 1.3.7 3 2 1.8l8-8c2 1 4 1 6 0l8 8c1.3 1.2 3-.5 2-1.8l-7-9c1-5-1-8-4-10z" fill="currentColor"/></symbol>
+    <symbol id="icon-shield" viewBox="0 0 24 24"><circle cx="12" cy="12" r="9.3" fill="#c8102e"/><circle cx="12" cy="12" r="7.3" fill="#f2f2f2"/><circle cx="12" cy="12" r="5.5" fill="#c8102e"/><circle cx="12" cy="12" r="3.7" fill="#0a3161"/><path d="M12 8.3l1.05 2.2 2.4.3-1.75 1.65.5 2.4-2.2-1.15-2.2 1.15.5-2.4-1.75-1.65 2.4-.3z" fill="#f2f2f2"/></symbol>
+    <symbol id="icon-hammer" viewBox="0 0 24 24"><rect x="3" y="4" width="10" height="7" rx="1" fill="#9098a3"/><rect x="3" y="4" width="10" height="2" fill="#d3d8e0"/><rect x="10.8" y="10.3" width="3" height="11.5" rx="1" transform="rotate(-38 10.8 10.3)" fill="#6b4a2b"/><path d="M15.5 2.5l1.2 2.2 2.5.7-2.1 1.4.2 2.6-2-1.5-2 1.5.2-2.6-2.1-1.4 2.5-.7z" fill="#ffdd66" opacity=".9"/></symbol>
+    <symbol id="icon-flyer" viewBox="0 0 24 24"><circle cx="12" cy="9" r="3" fill="currentColor"/><path d="M12 12c-2.5 0-5 1.3-7 3.5M12 12c2.5 0 5 1.3 7 3.5M12 12v6" stroke="currentColor" stroke-width="2" stroke-linecap="round" fill="none"/><path d="M3 20c2-1 3.5-2 4.5-3.5M21 20c-2-1-3.5-2-4.5-3.5" stroke="currentColor" stroke-width="1.4" stroke-linecap="round" opacity=".6"/></symbol>
+    <symbol id="icon-hulk" viewBox="0 0 24 24"><circle cx="12" cy="5.2" r="2.6" fill="currentColor"/><path d="M6 9c0-1.2 1-1.8 2-1.4 1-1 3-1 4 0 1-1 3-1 4 0 1-.4 2 .2 2 1.4v3c0 1-.8 1.6-1.8 1.4-.4 1.6-1 2.4-2 3l.6 3.6H9.2l.6-3.6c-1-.6-1.6-1.4-2-3C6.8 13.6 6 13 6 12z" fill="currentColor"/></symbol>
+  </defs>
+</svg>
+
+<div class="flying-hero" aria-hidden="true">
+  <img class="smart-img" data-key="ironman" data-names="ironman.png|ironman.jpg|ironman.JPG|ironman.png.JPG|ironman.jpeg|ironman.PNG" alt="">
+  <svg viewBox="0 0 24 24" style="display:none;"><use href="#icon-flyer"/></svg>
+</div>
+<div class="flying-shield" aria-hidden="true">
+  <img class="smart-img" data-key="shield" data-names="shield.png|shield.jpg|shield.JPG|shield.png.JPG|shield.jpeg|shield.PNG" alt="">
+  <svg viewBox="0 0 24 24" style="display:none;"><use href="#icon-shield"/></svg>
+</div>
+<div class="flying-hammer" aria-hidden="true">
+  <img class="smart-img" data-key="hammer" data-names="hammer.png|hammer.jpg|hammer.JPG|hammer.png.JPG|hammer.jpeg|hammer.PNG" alt="">
+  <svg viewBox="0 0 24 24" style="display:none;"><use href="#icon-hammer"/></svg>
+</div>
+<div class="leaping-hulk" aria-hidden="true">
+  <img class="smart-img" data-key="hulk" data-names="hulk.png|hulk.jpg|hulk.JPG|hulk.png.JPG|hulk.jpeg|hulk.PNG" alt="">
+  <svg viewBox="0 0 24 24" style="display:none;"><use href="#icon-hulk"/></svg>
+</div>
+<div class="mystic-portal" aria-hidden="true">
+  <img class="smart-img" data-key="drstrange" data-names="drstrange.png|drstrange.jpg|drstrange.JPG|drstrange.png.JPG|drstrange.jpeg|drstrange.PNG" alt="">
+  <svg viewBox="0 0 24 24" style="display:none;"><use href="#icon-drstrange"/></svg>
+</div>
+<div class="prowling-panther" aria-hidden="true">
+  <img class="smart-img" data-key="blackpanther" data-names="blackpanther.png|blackpanther.jpg|blackpanther.JPG|blackpanther.png.JPG|blackpanther.jpeg|blackpanther.PNG" alt="">
+  <svg viewBox="0 0 24 24" style="display:none;"><use href="#icon-blackpanther"/></svg>
+</div>
+
+<header>
+  <div class="swinger-wrap">
+    <div class="swinger-rope"></div>
+    <div class="swing-pivot">
+      <img class="swinger-fig smart-img" data-key="spiderman" data-names="spiderman.png|spiderman.jpg|spiderman.JPG|spiderman.png.JPG|spiderman.jpeg|spiderman.PNG" alt="">
+      <svg class="swinger-fig" viewBox="0 0 34 52" style="display:none;"><use href="#icon-swinger"/></svg>
+    </div>
+  </div>
+  <div class="eyebrow">Ticket d'entrée · Univers Marvel</div>
+  <h1>Le MCU, dans l'ordre</h1>
+  <p>Absolument tout — films, séries, one-shots, animation + Spider-Man Sony</p>
+</header>
+
+<div class="stats-wrap">
+  <div class="progress-label">
+    <span>Progression</span>
+    <span><span class="count" id="count-done">0</span> / <span id="count-total">0</span></span>
+  </div>
+  <div class="progress-track"><div class="progress-fill" id="progress-fill"></div></div>
+
+  <div class="time-cards">
+    <div class="time-card watched">
+      <div class="tc-label">Déjà vu</div>
+      <div class="tc-value" id="time-watched">0h</div>
+    </div>
+    <div class="time-card remaining">
+      <div class="tc-label">Il te reste</div>
+      <div class="tc-value" id="time-remaining">0h</div>
+    </div>
+  </div>
+</div>
+
+<div class="search-wrap">
+  <svg class="search-icon"><use href="#icon-search"/></svg>
+  <input type="search" id="search-input" placeholder="Chercher un titre...">
+</div>
+
+<div class="tabs">
+  <button class="tab-btn active" id="tab-btn-cinema" data-tab="cinema">
+    <span class="tab-icon-wrap">
+      <img class="smart-img tab-icon" data-key="tab-cinema" data-names="tab-cinema.png|tab-cinema.jpg|tab-cinema.JPG|tab-cinema.png.JPG|tab-cinema.jpeg|tab-cinema.PNG" alt="">
+      <svg class="tab-icon" style="display:none;"><use href="#icon-ticket"/></svg>
+    </span>
+    Avant le ciné
+  </button>
+  <button class="tab-btn" id="tab-btn-all" data-tab="all">
+    <span class="tab-icon-wrap">
+      <img class="smart-img tab-icon" data-key="tab-marathon" data-names="tab-marathon.png|tab-marathon.jpg|tab-marathon.JPG|tab-marathon.png.JPG|tab-marathon.jpeg|tab-marathon.PNG" alt="">
+      <svg class="tab-icon" style="display:none;"><use href="#icon-burst"/></svg>
+    </span>
+    Marathon complet
+  </button>
+  <button class="tab-btn" id="tab-btn-games" data-tab="games">
+    <span class="tab-icon-wrap">
+      <img class="smart-img tab-icon" data-key="tab-games" data-names="tab-games.png|tab-games.jpg|tab-games.JPG|tab-games.png.JPG|tab-games.jpeg|tab-games.PNG" alt="">
+      <svg class="tab-icon" style="display:none;"><use href="#icon-controller"/></svg>
+    </span>
+    Jeux &amp; séries
+  </button>
+</div>
+
+<div id="loading">Chargement de ta progression…</div>
+
+<main id="main-cinema" class="tab-panel active" style="display:none;">
+  <div class="hero-scatter" aria-hidden="true">
+    <svg class="scatter-icon" style="top:4%; left:82%; width:70px; height:70px; color:var(--gold); transform:rotate(-12deg);"><use href="#icon-shield"/></svg>
+    <svg class="scatter-icon" style="top:38%; left:-4%; width:80px; height:80px; color:var(--sony); transform:rotate(18deg);"><use href="#icon-hammer"/></svg>
+    <svg class="scatter-icon" style="top:70%; left:88%; width:64px; height:64px; color:var(--red); transform:rotate(-8deg);"><use href="#icon-flyer"/></svg>
+    <svg class="scatter-icon" style="top:88%; left:6%; width:76px; height:76px; color:var(--done); transform:rotate(10deg);"><use href="#icon-hulk"/></svg>
+  </div>
+  <div id="main-cinema-content"></div>
+</main>
+<main id="main-all" class="tab-panel" style="display:none;">
+  <div class="hero-scatter" aria-hidden="true">
+    <svg class="scatter-icon" style="top:3%; left:-3%; width:74px; height:74px; color:var(--red); transform:rotate(14deg);"><use href="#icon-flyer"/></svg>
+    <svg class="scatter-icon" style="top:20%; left:86%; width:66px; height:66px; color:var(--gold); transform:rotate(-16deg);"><use href="#icon-shield"/></svg>
+    <svg class="scatter-icon" style="top:44%; left:4%; width:78px; height:78px; color:var(--done); transform:rotate(-9deg);"><use href="#icon-hulk"/></svg>
+    <svg class="scatter-icon" style="top:60%; left:90%; width:70px; height:70px; color:var(--sony); transform:rotate(20deg);"><use href="#icon-hammer"/></svg>
+    <svg class="scatter-icon" style="top:80%; left:-2%; width:72px; height:72px; color:var(--gold); transform:rotate(6deg);"><use href="#icon-flyer"/></svg>
+    <svg class="scatter-icon" style="top:94%; left:82%; width:68px; height:68px; color:var(--red); transform:rotate(-14deg);"><use href="#icon-shield"/></svg>
+  </div>
+  <div id="main-all-content"></div>
+</main>
+<main id="main-games" class="tab-panel" style="display:none;">
+  <div class="hero-scatter" aria-hidden="true">
+    <svg class="scatter-icon" style="top:8%; left:84%; width:70px; height:70px; color:var(--gold); transform:rotate(-10deg);"><use href="#icon-controller"/></svg>
+    <svg class="scatter-icon" style="top:50%; left:-4%; width:76px; height:76px; color:var(--sony); transform:rotate(16deg);"><use href="#icon-drstrange"/></svg>
+    <svg class="scatter-icon" style="top:86%; left:80%; width:70px; height:70px; color:var(--red); transform:rotate(-12deg);"><use href="#icon-blackpanther"/></svg>
+  </div>
+  <div id="main-games-content"></div>
+</main>
+
+<div class="reset-bar" id="reset-bar" style="display:none;">
+  <button id="reset">Tout décocher (les deux onglets)</button>
+  <button id="customize-toggle">🎨 Personnaliser</button>
+</div>
+
+<div id="customize-panel" class="customize-panel">
+  <div class="customize-head">
+    <span>Personnaliser</span>
+    <button id="customize-close">✕</button>
+  </div>
+
+  <div class="streaming-box">
+    <div class="streaming-label">📺 Mon site de streaming</div>
+    <p class="customize-hint">Colle ici le lien vers le site où tu regardes. Le bouton TV en bas de l'écran t'y emmènera directement.</p>
+    <input type="url" id="streaming-link-input" placeholder="https://...">
+    <button id="streaming-link-save">Enregistrer le lien</button>
+    <p class="streaming-status" id="streaming-link-status"></p>
+  </div>
+
+  <p class="customize-hint">Choisis une photo depuis ta pellicule pour chaque personnage. Elle est enregistrée directement dans ce navigateur, sur cet appareil.</p>
+  <div class="customize-rows" id="customize-rows"></div>
+</div>
+
+<button id="tv-shortcut" aria-label="Aller sur mon site de streaming">
+  <svg><use href="#icon-tv"/></svg>
+</button>
+<p class="save-note footnote">Durées ~approximatives pour les séries (total des épisodes) et inconnues (?) pour les films pas encore sortis. La section Sony n'est pas canon MCU mais explique l'origine des pouvoirs et les personnages qui reviennent dans No Way Home.</p>
+<p class="save-note">Ta progression est sauvegardée automatiquement et privée — visible seulement par toi.</p>
+
+<script>
+// duration = minutes (null = inconnu / pas encore sorti), approx = true pour durées estimées
+const SONY = {
+  phase:"Spider-Man Sony (hors MCU)",
+  sub:"Optionnel — explique l'origine des pouvoirs et les personnages qui reviennent dans No Way Home",
+  items:[
+    {t:"Spider-Man", y:"2002 — Tobey Maguire", d:121, tag:"sony"},
+    {t:"Spider-Man 2", y:"2004 — Tobey Maguire", d:127, tag:"sony"},
+    {t:"Spider-Man 3", y:"2007 — Tobey Maguire", d:139, tag:"sony"},
+    {t:"The Amazing Spider-Man", y:"2012 — Andrew Garfield", d:136, tag:"sony"},
+    {t:"The Amazing Spider-Man 2", y:"2014 — Andrew Garfield", d:142, tag:"sony"},
+  ]
+};
+
+const SPIDERVERSE = {
+  phase:"Spider-Verse animé (Sony, pas MCU)",
+  sub:"Univers totalement à part (animation, multivers de Miles Morales) — aucun lien direct avec les films",
+  items:[
+    {t:"Spider-Man: New Generation", y:"2018 — Into the Spider-Verse", d:117, tag:"sony"},
+    {t:"Spider-Man: Across the Spider-Verse", y:"2023", d:140, tag:"sony"},
+    {t:"Spider-Man: Beyond the Spider-Verse", y:"18 juin 2027", d:null, tag:"sony"},
+  ]
+};
+
+const VENOM = {
+  phase:"Venom (Sony, pas MCU)",
+  sub:"Univers à part — petit clin d'œil dans la scène post-générique de No Way Home, rien d'obligatoire",
+  items:[
+    {t:"Venom", y:"2018 — Tom Hardy", d:112, tag:"sony"},
+    {t:"Venom: Let There Be Carnage", y:"2021", d:97, tag:"sony"},
+    {t:"Venom: The Last Dance", y:"2024", d:109, tag:"sony"},
+  ]
+};
+
+const GAMES = {
+  phase:"Jeux vidéo avec une histoire",
+  sub:"Façon Spider-Man — narratifs, pas de bagarre sans scénario (donc pas de Mortal Kombat etc.)",
+  items:[
+    {t:"Marvel's Spider-Man", y:"2018 — PS4/PC", d:1200, tag:"jeu"},
+    {t:"Marvel's Spider-Man: Miles Morales", y:"2020 — PS4/PS5/PC", d:480, tag:"jeu"},
+    {t:"Marvel's Spider-Man 2", y:"2023 — PS5", d:900, tag:"jeu"},
+    {t:"Marvel's Guardians of the Galaxy", y:"2021", d:1200, tag:"jeu"},
+    {t:"Marvel's Avengers (campagne)", y:"2020", d:900, tag:"jeu"},
+    {t:"Marvel's Midnight Suns", y:"2023", d:2400, tag:"jeu"},
+    {t:"Marvel's Wolverine", y:"15 septembre 2026 — PS5", d:null, tag:"jeu", upcoming:true},
+  ]
+};
+
+const CARTOONS = {
+  phase:"Dessins animés classiques (hors MCU)",
+  sub:"Séries d'animation Marvel indépendantes des films",
+  items:[
+    {t:"Spider-Man: The Animated Series", y:"1994-1998", d:1430, tag:"anim", approx:true},
+    {t:"The Spectacular Spider-Man", y:"2008-2009", d:572, tag:"anim", approx:true},
+    {t:"X-Men: The Animated Series", y:"1992-1997", d:1672, tag:"anim", approx:true},
+    {t:"X-Men '97 — Saison 1", y:"2024", d:300, tag:"anim", approx:true},
+  ]
+};
+
+const DATA = [
+  {phase:"Phase 1", items:[
+    {t:"Iron Man", y:"2008", d:126},
+    {t:"L'Incroyable Hulk", y:"2008", d:112},
+    {t:"Iron Man 2", y:"2010", d:124},
+    {t:"Marvel One-Shot: The Consultant", y:"2011", tag:"spécial", d:4},
+    {t:"Marvel One-Shot: A Funny Thing Happened...", y:"2011", tag:"spécial", d:4},
+    {t:"Thor", y:"2011", d:115},
+    {t:"Captain America: First Avenger", y:"2011", d:124},
+    {t:"Marvel One-Shot: Item 47", y:"2012", tag:"spécial", d:12},
+    {t:"Avengers", y:"2012", d:143},
+  ]},
+  {phase:"Phase 2", items:[
+    {t:"Marvel One-Shot: Agent Carter", y:"2013", tag:"spécial", d:15},
+    {t:"Iron Man 3", y:"2013", d:130},
+    {t:"Thor: Le Monde des ténèbres", y:"2013", d:112},
+    {t:"Captain America: Le Soldat de l'hiver", y:"2014", d:136},
+    {t:"Les Gardiens de la Galaxie", y:"2014", d:122},
+    {t:"Daredevil — Saison 1", y:"2015", tag:"netflix", d:650, approx:true},
+    {t:"Agent Carter — Saison 1", y:"2015", tag:"série", d:344, approx:true},
+    {t:"Jessica Jones — Saison 1", y:"2015", tag:"netflix", d:650, approx:true},
+    {t:"Avengers: L'Ère d'Ultron", y:"2015", d:141},
+    {t:"Ant-Man", y:"2015", d:117},
+    {t:"Daredevil — Saison 2", y:"2016", tag:"netflix", d:650, approx:true},
+    {t:"Agent Carter — Saison 2", y:"2016", tag:"série", d:430, approx:true},
+    {t:"Luke Cage — Saison 1", y:"2016", tag:"netflix", d:650, approx:true},
+  ]},
+  {phase:"Phase 3", items:[
+    {t:"Captain America: Civil War", y:"2016", d:147},
+    {t:"Doctor Strange", y:"2016", d:115},
+    {t:"Iron Fist — Saison 1", y:"2017", tag:"netflix", d:650, approx:true},
+    {t:"The Defenders", y:"2017", tag:"netflix", d:400, approx:true},
+    {t:"The Punisher — Saison 1", y:"2017", tag:"netflix", d:650, approx:true},
+    {t:"Les Gardiens de la Galaxie Vol. 2", y:"2017", d:137},
+    {t:"Spider-Man: Homecoming", y:"2017", d:133},
+    {t:"Thor: Ragnarok", y:"2017", d:130},
+    {t:"Luke Cage — Saison 2", y:"2018", tag:"netflix", d:650, approx:true},
+    {t:"Iron Fist — Saison 2", y:"2018", tag:"netflix", d:500, approx:true},
+    {t:"Black Panther", y:"2018", d:134},
+    {t:"Jessica Jones — Saison 2", y:"2018", tag:"netflix", d:650, approx:true},
+    {t:"Avengers: Infinity War", y:"2018", d:149},
+    {t:"Ant-Man et la Guêpe", y:"2018", d:118},
+    {t:"Daredevil — Saison 3", y:"2018", tag:"netflix", d:650, approx:true},
+    {t:"The Punisher — Saison 2", y:"2019", tag:"netflix", d:650, approx:true},
+    {t:"Jessica Jones — Saison 3", y:"2019", tag:"netflix", d:650, approx:true},
+    {t:"Captain Marvel", y:"2019", d:124},
+    {t:"Avengers: Endgame", y:"2019", d:181},
+    {t:"Spider-Man: Far From Home", y:"2019", d:129},
+  ]},
+  {phase:"Phase 4", items:[
+    {t:"WandaVision", y:"2021", tag:"série", d:286, approx:true},
+    {t:"Falcon et le Soldat de l'hiver", y:"2021", tag:"série", d:284, approx:true},
+    {t:"Loki — Saison 1", y:"2021", tag:"série", d:284, approx:true},
+    {t:"Black Widow", y:"2021", d:134},
+    {t:"What If...? — Saison 1", y:"2021", tag:"série", d:207, approx:true},
+    {t:"Shang-Chi et la Légende des Dix Anneaux", y:"2021", d:132},
+    {t:"Les Éternels", y:"2021", d:156},
+    {t:"Hawkeye", y:"2021", tag:"série", d:272, approx:true},
+    {t:"Spider-Man: No Way Home", y:"2021", d:148},
+    {t:"Moon Knight", y:"2022", tag:"série", d:286, approx:true},
+    {t:"Doctor Strange in the Multiverse of Madness", y:"2022", d:126},
+    {t:"Ms. Marvel", y:"2022", tag:"série", d:254, approx:true},
+    {t:"Thor: Love and Thunder", y:"2022", d:119},
+    {t:"Elle est Furieuse (She-Hulk)", y:"2022", tag:"série", d:279, approx:true},
+    {t:"Werewolf by Night", y:"2022", tag:"spécial", d:53},
+    {t:"Black Panther: Wakanda Forever", y:"2022", d:161},
+    {t:"Guardians of the Galaxy Holiday Special", y:"2022", tag:"spécial", d:44},
+  ]},
+  {phase:"Phase 5", items:[
+    {t:"Ant-Man et la Guêpe: Quantumania", y:"2023", d:125},
+    {t:"Secret Invasion", y:"2023", tag:"série", d:208, approx:true},
+    {t:"Les Gardiens de la Galaxie Vol. 3", y:"2023", d:149},
+    {t:"Loki — Saison 2", y:"2023", tag:"série", d:264, approx:true},
+    {t:"The Marvels", y:"2023", d:105},
+    {t:"Echo", y:"2024", tag:"netflix", d:220, approx:true},
+    {t:"Agatha All Along", y:"2024", tag:"série", d:360, approx:true},
+    {t:"Deadpool & Wolverine", y:"2024", d:128},
+    {t:"What If...? — Saisons 2 & 3", y:"2024", tag:"série", d:290, approx:true},
+    {t:"Wonder Man", y:"2025", tag:"série", d:320, approx:true},
+    {t:"Ironheart", y:"2025", tag:"série", d:250, approx:true},
+    {t:"Daredevil: Born Again — Saison 1", y:"2025", tag:"série", d:380, approx:true},
+    {t:"Captain America: Brave New World", y:"2025", d:118},
+    {t:"Thunderbolts*", y:"2025", d:126},
+    {t:"Marvel Zombies", y:"2025", tag:"anim", d:140, approx:true},
+    {t:"Daredevil: Born Again — Saison 2", y:"2026", tag:"série", d:380, approx:true},
+  ]},
+  {phase:"Phase 6", items:[
+    {t:"Eyes of Wakanda", y:"2025 (se déroule dans un lointain passé)", tag:"anim", d:120, approx:true},
+    {t:"The Fantastic Four: First Steps", y:"2025", d:115},
+    {t:"The Punisher: One Last Kill", y:"2026", tag:"spécial", d:46, approx:true},
+    {t:"Spider-Man: Brand New Day", y:"31 juillet 2026", d:null},
+    {t:"Avengers: Doomsday", y:"16 décembre 2026", d:null},
+    {t:"Avengers: Secret Wars", y:"2027", d:null},
+  ]},
+];
+
+const STORAGE_KEY = "mcu-checklist:checked";
+
+function slug(prefix, itemIdx){
+  return `${prefix}-i${itemIdx}`;
+}
+
+function fmtMin(totalMin){
+  if(totalMin === null || totalMin === undefined) return "?";
+  const h = Math.floor(totalMin/60);
+  const m = totalMin % 60;
+  return h > 0 ? `${h}h${m>0? String(m).padStart(2,'0') : ''}` : `${m}min`;
+}
+
+function fmtItemDuration(item){
+  if(item.d === null || item.d === undefined) return "?";
+  return (item.approx ? "~" : "") + fmtMin(item.d);
+}
+
+function slugify(str){
+  return str.toLowerCase()
+    .normalize('NFD').replace(/[\u0300-\u036f]/g, '')
+    .replace(/[^a-z0-9]+/g, '-')
+    .replace(/^-+|-+$/g, '');
+}
+
+function posterHtml(item){
+  const slug = slugify(item.t);
+  const initials = item.t.split(/\s+/).filter(w => /[a-zA-Z0-9]/.test(w[0])).slice(0,2).map(w => w[0]).join('').toUpperCase();
+  return `
+    <img class="item-poster" src="posters/${slug}.jpg" alt="" loading="lazy"
+      onerror="this.style.display='none'; this.nextElementSibling.style.display='flex';">
+    <div class="item-poster-fallback">${initials}</div>
+  `;
+}
+
+function tagClass(tag){
+  if(tag === "série") return "serie";
+  if(tag === "spécial") return "special";
+  if(tag === "netflix") return "netflix";
+  if(tag === "anim") return "anim";
+  if(tag === "sony") return "sony";
+  if(tag === "jeu") return "jeu";
+  return "serie";
+}
+
+async function loadChecked(){
+  try{
+    const raw = localStorage.getItem(STORAGE_KEY);
+    return raw ? JSON.parse(raw) : {};
+  }catch(e){
+    console.error("Erreur de lecture localStorage", e);
+    return {};
+  }
+}
+
+async function saveChecked(state){
+  try{
+    localStorage.setItem(STORAGE_KEY, JSON.stringify(state));
+  }catch(e){
+    console.error("Erreur de sauvegarde localStorage", e);
+  }
+}
+
+const PHASE_ICONS = ['icon-ring', 'icon-shield', 'icon-hammer', 'icon-hulk', 'icon-flyer', 'icon-drstrange', 'icon-blackpanther', 'icon-burst'];
+const ICON_TO_KEY = {
+  'icon-ring':'ironman',
+  'icon-flyer':'ironman',
+  'icon-shield':'shield',
+  'icon-hammer':'hammer',
+  'icon-hulk':'hulk',
+  'icon-web':'spiderman',
+  'icon-drstrange':'drstrange',
+  'icon-blackpanther':'blackpanther',
+};
+
+function phaseIconHtml(iconId){
+  const key = ICON_TO_KEY[iconId];
+  const custom = key ? getCustomImage(key) : null;
+  if(custom){
+    return `<img class="phase-icon" src="${custom}">`;
+  }
+  return `<svg class="phase-icon"><use href="#${iconId}"/></svg>`;
+}
+
+function buildPhaseSection(phaseObj, prefix, pIdx, checkedState, isSony){
+  const section = document.createElement('div');
+  section.className = 'phase' + (isSony ? ' sony' : '');
+
+  const phaseMin = phaseObj.items.reduce((acc, it) => acc + (it.d || 0), 0);
+  const hasUnknown = phaseObj.items.some(it => it.d === null || it.d === undefined);
+  const iconId = isSony ? 'icon-web' : PHASE_ICONS[pIdx % PHASE_ICONS.length];
+
+  const head = document.createElement('div');
+  head.className = 'phase-head';
+  head.innerHTML = `<span class="phase-num">${isSony ? 'SM' : (pIdx+1)}</span><span class="phase-title">${phaseIconHtml(iconId)}${phaseObj.phase}</span><span class="phase-duration">${fmtMin(phaseMin)}${hasUnknown ? ' +?' : ''}</span>${phaseObj.sub ? `<span class="phase-sub">${phaseObj.sub}</span>` : ''}`;
+  section.appendChild(head);
+
+  const ul = document.createElement('ul');
+  ul.className = 'items';
+
+  phaseObj.items.forEach((item, iIdx) => {
+    const id = slug(prefix, iIdx);
+    const li = document.createElement('li');
+    li.className = 'item' + (checkedState[id] ? ' checked' : '') + (item.upcoming ? ' item-upcoming' : '');
+
+    const tagHtml = item.tag ? `<span class="tag ${tagClass(item.tag)}">${item.tag}</span>` : '';
+    const upcomingHtml = item.upcoming ? `<span class="tag upcoming">à venir</span>` : '';
+
+    li.innerHTML = `
+      <label class="row">
+        <input type="checkbox" data-id="${id}" ${checkedState[id] ? 'checked' : ''}>
+        <span class="item-text">
+          <span class="item-title-row">
+            <span class="item-title">${item.t}${tagHtml}${upcomingHtml}</span>
+            <span class="item-duration">${fmtItemDuration(item)}</span>
+          </span>
+          <div class="item-year">${item.y}</div>
+        </span>
+      </label>
+    `;
+    ul.appendChild(li);
+  });
+
+  section.appendChild(ul);
+  return section;
+}
+
+// Références vers les 5 titres essentiels avant le ciné (mêmes ids que dans le marathon complet, donc l'état coché est synchronisé entre les deux onglets)
+const CINEMA_REFS = [
+  {prefix:'p2', idx:0},  // Captain America: Civil War
+  {prefix:'p2', idx:6},  // Spider-Man: Homecoming
+  {prefix:'p2', idx:19}, // Spider-Man: Far From Home
+  {prefix:'p3', idx:8},  // Spider-Man: No Way Home
+  {prefix:'p5', idx:2},  // The Punisher: One Last Kill
+];
+
+function getItemByRef(ref){
+  if(ref.prefix === 'sony') return SONY.items[ref.idx];
+  const pIdx = parseInt(ref.prefix.slice(1));
+  return DATA[pIdx].items[ref.idx];
+}
+
+function buildRefListSection(title, sub, refs, checkedState, iconId){
+  const section = document.createElement('div');
+  section.className = 'phase';
+
+  const head = document.createElement('div');
+  head.className = 'phase-head';
+  const totalMin = refs.reduce((acc, ref) => acc + (getItemByRef(ref).d || 0), 0);
+  head.innerHTML = `<span class="phase-title">${phaseIconHtml(iconId)}${title}</span><span class="phase-duration">${fmtMin(totalMin)}</span>${sub ? `<span class="phase-sub">${sub}</span>` : ''}`;
+  section.appendChild(head);
+
+  const ul = document.createElement('ul');
+  ul.className = 'items';
+
+  refs.forEach(ref => {
+    const item = getItemByRef(ref);
+    const id = slug(ref.prefix, ref.idx);
+    const li = document.createElement('li');
+    li.className = 'item' + (checkedState[id] ? ' checked' : '');
+    const tagHtml = item.tag ? `<span class="tag ${tagClass(item.tag)}">${item.tag}</span>` : '';
+    li.innerHTML = `
+      <label class="row">
+        <input type="checkbox" data-id="${id}" ${checkedState[id] ? 'checked' : ''}>
+        <span class="item-text">
+          <span class="item-title-row">
+            <span class="item-title">${item.t}${tagHtml}</span>
+            <span class="item-duration">${fmtItemDuration(item)}</span>
+          </span>
+          <div class="item-year">${item.y}</div>
+        </span>
+      </label>
+    `;
+    ul.appendChild(li);
+  });
+
+  section.appendChild(ul);
+  return section;
+}
+
+function renderAll(checkedState){
+  const main = document.getElementById('main-all-content');
+  main.innerHTML = '';
+
+  main.appendChild(buildPhaseSection(SONY, 'sony', -1, checkedState, true));
+  main.appendChild(buildPhaseSection(SPIDERVERSE, 'spiderverse', -1, checkedState, true));
+  main.appendChild(buildPhaseSection(VENOM, 'venom', -1, checkedState, true));
+  DATA.forEach((phase, pIdx) => {
+    main.appendChild(buildPhaseSection(phase, `p${pIdx}`, pIdx, checkedState, false));
+  });
+}
+
+function renderCinema(checkedState){
+  const main = document.getElementById('main-cinema-content');
+  main.innerHTML = '';
+
+  main.appendChild(buildRefListSection(
+    "L'essentiel avant le ciné",
+    "Dans l'ordre — regarde uniquement ceux-ci si tu es pressé",
+    CINEMA_REFS,
+    checkedState,
+    'icon-ticket'
+  ));
+
+  const sonyRefs = SONY.items.map((_, idx) => ({prefix:'sony', idx}));
+  main.appendChild(buildRefListSection(
+    "Bonus : comprendre No Way Home (optionnel)",
+    "Explique les pouvoirs de Peter et les variantes qui reviennent dans No Way Home",
+    sonyRefs,
+    checkedState,
+    'icon-web'
+  ));
+}
+
+function renderGames(checkedState){
+  const main = document.getElementById('main-games-content');
+  main.innerHTML = '';
+
+  main.appendChild(buildPhaseSection(GAMES, 'games', -1, checkedState, true));
+  main.appendChild(buildPhaseSection(CARTOONS, 'cartoons', -1, checkedState, true));
+}
+
+function render(checkedState){
+  renderCinema(checkedState);
+  renderAll(checkedState);
+  renderGames(checkedState);
+
+  const total = SONY.items.length + SPIDERVERSE.items.length + VENOM.items.length + DATA.reduce((acc,p) => acc + p.items.length, 0);
+  document.getElementById('count-total').textContent = total;
+  updateProgress(checkedState, total);
+}
+
+function updateProgress(checkedState, total){
+  const done = Object.values(checkedState).filter(Boolean).length;
+  document.getElementById('count-done').textContent = done;
+  document.getElementById('count-total').textContent = total;
+  const pct = total ? (done/total*100) : 0;
+  document.getElementById('progress-fill').style.width = pct + '%';
+
+  let watchedMin = 0, remainingMin = 0, unknownRemaining = false;
+
+  SONY.items.forEach((item, iIdx) => {
+    const id = slug('sony', iIdx);
+    const checked = !!checkedState[id];
+    if(item.d === null || item.d === undefined){ if(!checked) unknownRemaining = true; return; }
+    if(checked) watchedMin += item.d; else remainingMin += item.d;
+  });
+
+  SPIDERVERSE.items.forEach((item, iIdx) => {
+    const id = slug('spiderverse', iIdx);
+    const checked = !!checkedState[id];
+    if(item.d === null || item.d === undefined){ if(!checked) unknownRemaining = true; return; }
+    if(checked) watchedMin += item.d; else remainingMin += item.d;
+  });
+
+  VENOM.items.forEach((item, iIdx) => {
+    const id = slug('venom', iIdx);
+    const checked = !!checkedState[id];
+    if(item.d === null || item.d === undefined){ if(!checked) unknownRemaining = true; return; }
+    if(checked) watchedMin += item.d; else remainingMin += item.d;
+  });
+
+  DATA.forEach((phase, pIdx) => {
+    phase.items.forEach((item, iIdx) => {
+      const id = slug(`p${pIdx}`, iIdx);
+      const checked = !!checkedState[id];
+      if(item.d === null || item.d === undefined){ if(!checked) unknownRemaining = true; return; }
+      if(checked) watchedMin += item.d; else remainingMin += item.d;
+    });
+  });
+
+  document.getElementById('time-watched').textContent = fmtMin(watchedMin);
+  document.getElementById('time-remaining').textContent = fmtMin(remainingMin) + (unknownRemaining ? ' +?' : '');
+}
+
+const CUSTOM_KEYS = [
+  {key:'ironman', label:'Iron Man'},
+  {key:'shield', label:'Bouclier'},
+  {key:'hammer', label:'Marteau'},
+  {key:'hulk', label:'Hulk'},
+  {key:'spiderman', label:'Spider-Man'},
+  {key:'drstrange', label:'Doctor Strange'},
+  {key:'blackpanther', label:'Black Panther'},
+  {key:'tab-cinema', label:'Icône onglet "Avant le ciné"'},
+  {key:'tab-marathon', label:'Icône onglet "Marathon complet"'},
+  {key:'tab-games', label:'Icône onglet "Jeux & séries"'},
+];
+const CUSTOM_STORAGE_PREFIX = 'mcu-custom-img:';
+
+function getCustomImage(key){
+  try{ return localStorage.getItem(CUSTOM_STORAGE_PREFIX + key); }
+  catch(e){ return null; }
+}
+function setCustomImage(key, dataUrl){
+  try{ localStorage.setItem(CUSTOM_STORAGE_PREFIX + key, dataUrl); }
+  catch(e){ console.error('Erreur de sauvegarde image', e); }
+}
+function removeCustomImage(key){
+  try{ localStorage.removeItem(CUSTOM_STORAGE_PREFIX + key); }
+  catch(e){}
+}
+
+function applySmartImg(img){
+  const key = img.dataset.key;
+  const custom = key ? getCustomImage(key) : null;
+  if(custom){
+    img.src = custom;
+    img.style.display = 'block';
+    const fallback = img.nextElementSibling;
+    if(fallback) fallback.style.display = 'none';
+    return;
+  }
+  // Sinon on essaie les noms de fichiers déposés sur GitHub, puis le dessin SVG
+  const candidates = img.dataset.names.split('|');
+  let i = 0;
+  function tryNext(){
+    if(i >= candidates.length){
+      img.style.display = 'none';
+      const fallback = img.nextElementSibling;
+      if(fallback) fallback.style.display = 'block';
+      return;
+    }
+    img.src = candidates[i];
+    i++;
+  }
+  img.onerror = tryNext;
+  tryNext();
+}
+
+document.querySelectorAll('.smart-img').forEach(applySmartImg);
+
+// Redimensionne une image choisie par l'utilisateur avant de la stocker (pour rester léger)
+function resizeImageFile(file, maxDim){
+  return new Promise((resolve, reject) => {
+    const reader = new FileReader();
+    reader.onload = (e) => {
+      const img = new Image();
+      img.onload = () => {
+        let w = img.width, h = img.height;
+        if(w > h && w > maxDim){ h = Math.round(h * maxDim / w); w = maxDim; }
+        else if(h > maxDim){ w = Math.round(w * maxDim / h); h = maxDim; }
+        const canvas = document.createElement('canvas');
+        canvas.width = w; canvas.height = h;
+        canvas.getContext('2d').drawImage(img, 0, 0, w, h);
+        resolve(canvas.toDataURL('image/png'));
+      };
+      img.onerror = reject;
+      img.src = e.target.result;
+    };
+    reader.onerror = reject;
+    reader.readAsDataURL(file);
+  });
+}
+
+function buildCustomizeRows(){
+  const wrap = document.getElementById('customize-rows');
+  wrap.innerHTML = '';
+  CUSTOM_KEYS.forEach(({key, label}) => {
+    const existing = getCustomImage(key);
+    const row = document.createElement('div');
+    row.className = 'customize-row';
+    row.innerHTML = `
+      <img class="customize-thumb" id="thumb-${key}" src="${existing || ''}" style="${existing ? '' : 'opacity:.3'}">
+      <div class="customize-info">
+        <div class="name">${label}</div>
+        <div class="status" id="status-${key}">${existing ? 'Image personnalisée active' : 'Dessin par défaut'}</div>
+      </div>
+      <div class="customize-actions">
+        <label>Choisir
+          <input type="file" accept="image/*" data-key="${key}">
+        </label>
+        <button data-reset="${key}" ${existing ? '' : 'disabled style="opacity:.3"'}>Réinitialiser</button>
+      </div>
+    `;
+    wrap.appendChild(row);
+  });
+
+  wrap.querySelectorAll('input[type=file]').forEach(input => {
+    input.addEventListener('change', async (e) => {
+      const key = input.dataset.key;
+      const file = e.target.files[0];
+      if(!file) return;
+      const dataUrl = await resizeImageFile(file, 500);
+      setCustomImage(key, dataUrl);
+      document.querySelectorAll(`.smart-img[data-key="${key}"]`).forEach(applySmartImg);
+      buildCustomizeRows();
+      refreshPhaseIcons();
+    });
+  });
+
+  wrap.querySelectorAll('[data-reset]').forEach(btn => {
+    btn.addEventListener('click', () => {
+      const key = btn.dataset.reset;
+      removeCustomImage(key);
+      document.querySelectorAll(`.smart-img[data-key="${key}"]`).forEach(applySmartImg);
+      buildCustomizeRows();
+      refreshPhaseIcons();
+    });
+  });
+}
+
+// Met à jour uniquement les petites icônes de Phase (sans re-cocher/décocher quoi que ce soit)
+async function refreshPhaseIcons(){
+  const state = await loadChecked();
+  render(state);
+}
+
+document.getElementById('customize-toggle').addEventListener('click', () => {
+  buildCustomizeRows();
+  loadStreamingLinkIntoField();
+  document.getElementById('customize-panel').classList.add('open');
+});
+document.getElementById('customize-close').addEventListener('click', () => {
+  document.getElementById('customize-panel').classList.remove('open');
+});
+
+// Lien de streaming perso (saisi et sauvegardé par l'utilisateur, jamais choisi par moi)
+const STREAMING_LINK_KEY = 'mcu-streaming-link';
+
+function getStreamingLink(){
+  try{ return localStorage.getItem(STREAMING_LINK_KEY) || ''; }
+  catch(e){ return ''; }
+}
+function loadStreamingLinkIntoField(){
+  document.getElementById('streaming-link-input').value = getStreamingLink();
+  document.getElementById('streaming-link-status').textContent = '';
+}
+
+document.getElementById('streaming-link-save').addEventListener('click', () => {
+  let val = document.getElementById('streaming-link-input').value.trim();
+  if(val && !/^https?:\/\//i.test(val)) val = 'https://' + val;
+  try{
+    localStorage.setItem(STREAMING_LINK_KEY, val);
+    document.getElementById('streaming-link-input').value = val;
+    document.getElementById('streaming-link-status').textContent = val ? 'Lien enregistré ✓' : 'Lien effacé';
+  }catch(e){
+    document.getElementById('streaming-link-status').textContent = 'Erreur de sauvegarde';
+  }
+});
+
+document.getElementById('tv-shortcut').addEventListener('click', () => {
+  const link = getStreamingLink();
+  if(link){
+    window.open(link, '_blank');
+  }else{
+    buildCustomizeRows();
+    loadStreamingLinkIntoField();
+    document.getElementById('customize-panel').classList.add('open');
+    document.getElementById('streaming-link-input').focus();
+  }
+});
+
+(async function init(){
+  let checkedState = await loadChecked();
+  render(checkedState);
+
+  document.getElementById('loading').style.display = 'none';
+  document.getElementById('main-cinema').style.display = '';
+  document.getElementById('main-all').style.display = '';
+  document.getElementById('main-games').style.display = '';
+  document.getElementById('reset-bar').style.display = 'block';
+
+  // Onglets
+  document.querySelectorAll('.tab-btn').forEach(btn => {
+    btn.addEventListener('click', () => {
+      document.querySelectorAll('.tab-btn').forEach(b => b.classList.remove('active'));
+      btn.classList.add('active');
+      const which = btn.dataset.tab;
+      document.getElementById('main-cinema').classList.toggle('active', which === 'cinema');
+      document.getElementById('main-all').classList.toggle('active', which === 'all');
+      document.getElementById('main-games').classList.toggle('active', which === 'games');
+    });
+  });
+
+  // Un seul écouteur global : coche/décoche partout où l'id apparaît (les deux onglets partagent les mêmes ids)
+  document.body.addEventListener('change', async (e) => {
+    if(e.target.matches('input[type=checkbox]')){
+      const id = e.target.dataset.id;
+      const isChecked = e.target.checked;
+      checkedState[id] = isChecked;
+
+      document.querySelectorAll(`input[data-id="${id}"]`).forEach(cb => {
+        cb.checked = isChecked;
+        const li = cb.closest('li.item');
+        if(li) li.classList.toggle('checked', isChecked);
+      });
+
+      const total = SONY.items.length + SPIDERVERSE.items.length + VENOM.items.length + DATA.reduce((acc,p) => acc + p.items.length, 0);
+      updateProgress(checkedState, total);
+      await saveChecked(checkedState);
+    }
+  });
+
+  let resetArmed = false;
+  let resetTimer = null;
+  const resetBtn = document.getElementById('reset');
+  const resetBtnDefaultText = resetBtn.textContent;
+
+  resetBtn.addEventListener('click', async () => {
+    if(!resetArmed){
+      resetArmed = true;
+      resetBtn.textContent = 'Sûr ? Retape pour confirmer';
+      resetBtn.style.borderColor = 'var(--red)';
+      resetBtn.style.color = 'var(--red)';
+      clearTimeout(resetTimer);
+      resetTimer = setTimeout(() => {
+        resetArmed = false;
+        resetBtn.textContent = resetBtnDefaultText;
+        resetBtn.style.borderColor = '';
+        resetBtn.style.color = '';
+      }, 4000);
+      return;
+    }
+
+    clearTimeout(resetTimer);
+    resetArmed = false;
+    resetBtn.textContent = resetBtnDefaultText;
+    resetBtn.style.borderColor = '';
+    resetBtn.style.color = '';
+
+    checkedState = {};
+    await saveChecked(checkedState);
+    render(checkedState);
+  });
+  // Recherche en direct
+  function normalize(str){
+    return str.toLowerCase().normalize('NFD').replace(/[\u0300-\u036f]/g, '');
+  }
+  document.getElementById('search-input').addEventListener('input', (e) => {
+    const q = normalize(e.target.value.trim());
+    document.querySelectorAll('.tab-panel').forEach(panel => {
+      panel.querySelectorAll('.phase').forEach(phaseEl => {
+        let anyVisible = false;
+        phaseEl.querySelectorAll('li.item').forEach(li => {
+          const title = normalize(li.querySelector('.item-title').textContent);
+          const match = !q || title.includes(q);
+          li.classList.toggle('hidden', !match);
+          if(match) anyVisible = true;
+        });
+        phaseEl.classList.toggle('hidden', !anyVisible);
+      });
+    });
+  });
+
+})();
+</script>
+
+</body>
+</html>
